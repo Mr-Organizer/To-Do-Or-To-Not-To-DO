@@ -1,0 +1,263 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Optimo - To-Do List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="title_logo_icon.jpg" type="image/jpg">
+    <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background-color: #292b2c; /* Dark grey background */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        header h1 {
+            font-size: 28px;
+            color: #fff;
+            margin: 0;
+        }
+
+        .main-container {
+            width: 100%;
+            height: 80%;
+            display: flex;
+            gap: 5px;
+            overflow: hidden;
+        }
+
+        .box,
+        .form-container {
+            flex: 1;
+            padding: 20px;
+            background: linear-gradient(45deg, #009688, #4caf50);
+            border-radius: 20px;
+            overflow-y: auto;
+            border: 2px solid #fff;
+            text-align: center;
+            margin: 0;
+        }
+
+        .box h2,
+        .form-container h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .box-content {
+            margin-top: 10px;
+            color: #ccc;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-container input,
+        .form-container select {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #525d63;
+            color: #fff;
+            width: 100%;
+        }
+
+        .form-container input[type="submit"] {
+            cursor: pointer;
+            background: linear-gradient(45deg, #4caf50, #009688);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .form-container input[type="submit"]:hover {
+            background: linear-gradient(45deg, #4caf50, #00796b);
+        }
+
+        .done {
+            text-decoration: line-through;
+            color: #777;
+        }
+
+        .date-time-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .date-time-inputs label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Optimo</h1>
+    </header>
+
+    <div class="main-container">
+        <div class="box">
+            <h2>Tasks</h2>
+            <div class="box-content">
+                <ul class="task-list" id="taskList">
+                    {% for task in tasks %}
+                        <li class="task">
+                            {{ task.description }}
+                            <div class="task-details">
+                                <p>Deadline: {{ task.deadline.strftime("%Y-%m-%d %H:%M") }}</p>
+                                <p>Impact Score: {{ task.importance }}</p>
+                                <p>Urgency Score: {{ task.urgency_score }}</p>
+                                <p>Time Taken: {{ task.time_taken }} hours</p>
+                            </div>
+                            <button onclick="markAsDone(this)">Mark as Done</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="box form-container">
+            <h2>Add Task</h2>
+            <form id="taskForm" onsubmit="addTask(event)">
+                <label for="taskName">Task Name:</label>
+                <input type="text" id="taskName" required>
+
+                <div class="date-time-inputs">
+                    <label for="deadlineDate">Deadline Date:</label>
+                    <input type="date" id="deadlineDate" required>
+
+                    <label for="deadlineTime">Deadline Time:</label>
+                    <input type="time" id="deadlineTime" required>
+                </div>
+
+                <label for="impactScore">Impact Score (1-10):</label>
+                <input type="number" id="impactScore" min="1" max="10" required>
+
+                <label for="urgency">Urgency Score (1-10):</label>
+                <input type="number" id="urgency" min="1" max="10" required>
+
+                <div class="date-time-inputs">
+                    <label for="timeHours">Time Taken (Hours):</label>
+                    <input type="number" id="timeHours" placeholder="Hours" min="0" required>
+
+                    <label for="timeMinutes">Time Taken (Minutes):</label>
+                    <input type="number" id="timeMinutes" placeholder="Minutes" min="0" max="59" required>
+
+                    <label for="timeSeconds">Time Taken (Seconds):</label>
+                    <input type="number" id="timeSeconds" placeholder="Seconds" min="0" max="59" required>
+                </div>
+
+                <input type="submit" value="Add Task">
+            </form>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
+<script>
+    function addTask(event) {
+        event.preventDefault();
+
+        const taskName = document.getElementById('taskName').value;
+        const deadlineDate = document.getElementById('deadlineDate').value;
+        const deadlineTime = document.getElementById('deadlineTime').value;
+        const impactScore = document.getElementById('impactScore').value;
+        const urgency = document.getElementById('urgency').value;
+        const timeHours = document.getElementById('timeHours').value;
+        const timeMinutes = document.getElementById('timeMinutes').value;
+        const timeSeconds = document.getElementById('timeSeconds').value;
+
+        const taskElement = document.createElement('li');
+        taskElement.classList.add('task');
+
+        const taskDetailsElement = document.createElement('div');
+        taskDetailsElement.classList.add('task-details');
+        taskDetailsElement.innerHTML = `
+            <p>Deadline: ${deadlineDate} ${deadlineTime}</p>
+            <p>Impact Score: ${impactScore}</p>
+            <p>Urgency Score: ${urgency}</p>
+            <p>Time Taken: ${timeHours} hours, ${timeMinutes} minutes, ${timeSeconds} seconds</p>
+        `;
+
+        const markAsDoneButton = document.createElement('button');
+        markAsDoneButton.textContent = 'Mark as Done';
+        markAsDoneButton.addEventListener('click', () => markAsDone(markAsDoneButton));
+
+        document.getElementById('taskList').appendChild(taskElement);
+        taskElement.appendChild(document.createTextNode(taskName));
+        taskElement.appendChild(taskDetailsElement);
+        taskElement.appendChild(markAsDoneButton);
+
+        sortTasks();  // Sort tasks after adding a new one
+
+        document.getElementById('taskForm').reset();
+    }
+
+    function markAsDone(button) {
+        const task = button.parentElement;
+        task.classList.toggle('done');
+        const taskList = document.getElementById('taskList');
+        taskList.appendChild(task);
+
+        sortTasks();  // Sort tasks after marking as done
+    }
+
+    function sortTasks() {
+        const taskList = document.getElementById('taskList');
+        const tasks = Array.from(taskList.children);
+
+        tasks.sort((a, b) => {
+            const aDate = new Date(a.querySelector('.task-details p:first-child').textContent.split(': ')[1]);
+            const bDate = new Date(b.querySelector('.task-details p:first-child').textContent.split(': ')[1]);
+
+            // Sort based on deadline
+            if (aDate !== bDate) {
+                return aDate - bDate;
+            }
+
+            // If deadlines are equal, sort based on importance
+            const aImportance = parseInt(a.querySelector('.task-details p:nth-child(2)').textContent.split(': ')[1]);
+            const bImportance = parseInt(b.querySelector('.task-details p:nth-child(2)').textContent.split(': ')[1]);
+
+            if (aImportance !== bImportance) {
+                return bImportance - aImportance; // Sort in descending order of importance
+            }
+
+            // If importance is also equal, sort based on time taken
+            const aTimeTaken = parseFloat(a.querySelector('.task-details p:last-child').textContent.split(': ')[1].split(' ')[0]);
+            const bTimeTaken = parseFloat(b.querySelector('.task-details p:last-child').textContent.split(': ')[1].split(' ')[0]);
+
+            return aTimeTaken - bTimeTaken;
+        });
+
+        taskList.innerHTML = '';  // Clear the current list
+
+        tasks.forEach(task => {
+            taskList.appendChild(task);
+        });
+    }
+</script>
+
+</body>
+
+</html>
